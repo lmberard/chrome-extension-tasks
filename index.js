@@ -71,70 +71,112 @@ function getCurrentDateTime() {
 ADD TASK TO UI
 ******************************/
 function addTaskToUI(title, description, completed, timestamp = null) {
-  const li = document.createElement("li");
-
-  // Create checkbox
-  const checkbox = document.createElement("input");
-  checkbox.type = "checkbox";
-  checkbox.checked = completed;
+    const li = document.createElement("li");
   
-  // Create elements for title, description, and timestamp
-  const taskTitle = document.createElement("span");
-  taskTitle.textContent = title;
-  taskTitle.className = "task-title";
-
-  const taskDesc = document.createElement("span");
-  taskDesc.textContent = description;
-  taskDesc.className = "task-desc";
-
-  const taskTimestamp = document.createElement("span");
-  taskTimestamp.textContent = timestamp;
-  taskTimestamp.className = "task-timestamp";
-
-  // If the task is completed, apply the completed styles
-  if (completed) {
-    taskTitle.classList.add("completed");
-    taskDesc.classList.add("completed");
-  }
-
-  // Toggle completed state on checkbox change
-  checkbox.addEventListener("change", () => {
-    taskTitle.classList.toggle("completed", checkbox.checked);
-    taskDesc.classList.toggle("completed", checkbox.checked);
-    toggleTaskCompleted(title);
-  });
-
-  // Create delete button
-  const deleteBtn = document.createElement("button");
-  deleteBtn.className = "delete-btn";
-  deleteBtn.innerHTML = "&#10006;"; // Use an X icon for delete
-  deleteBtn.addEventListener("click", () => {
-    // Remove the task from the DOM
-    todoList.removeChild(li);
+    // Create checkbox
+    const checkbox = document.createElement("input");
+    checkbox.type = "checkbox";
+    checkbox.checked = completed;
     
-    // Remove the task from chrome.storage.sync
-    chrome.storage.sync.get("todos", (data) => {
-      const todos = data.todos || [];
-      const updatedTodos = todos.filter(t => t.title !== title); // Remove task by title
-      chrome.storage.sync.set({ todos: updatedTodos });
+    // Create a container for task details (title, description, timestamp)
+    const taskInfo = document.createElement("div");
+    taskInfo.className = "task-info";
+    
+    // Create elements for title, description, and timestamp
+    const taskTitle = document.createElement("span");
+    taskTitle.textContent = title;
+    taskTitle.className = "task-title";
+  
+    const taskDesc = document.createElement("span");
+    taskDesc.textContent = description;
+    taskDesc.className = "task-desc";
+  
+    const taskTimestamp = document.createElement("span");
+    taskTimestamp.textContent = timestamp;
+    taskTimestamp.className = "task-timestamp";
+  
+    // Append title, description, and timestamp to the task info container
+    taskInfo.appendChild(taskTitle);
+    taskInfo.appendChild(taskDesc);
+    taskInfo.appendChild(taskTimestamp);
+  
+    // If the task is completed, apply the completed styles
+    if (completed) {
+      taskTitle.classList.add("completed");
+      taskDesc.classList.add("completed");
+      taskTimestamp.classList.add("completed");
+    }
+  
+    // Toggle completed state on checkbox change
+    checkbox.addEventListener("change", () => {
+      taskTitle.classList.toggle("completed", checkbox.checked);
+      taskDesc.classList.toggle("completed", checkbox.checked);
+      taskTimestamp.classList.toggle("completed", checkbox.checked);
+      toggleTaskCompleted(title);
     });
-  });
 
-  // Create a div for task actions (checkbox and delete button)
-  const taskActions = document.createElement("div");
-  taskActions.className = "task-actions";
-  taskActions.appendChild(checkbox);
-  taskActions.appendChild(deleteBtn);
+    // Create edit button
+    const editBtn = document.createElement("button");
+    editBtn.className = "edit-btn";
+    editBtn.innerHTML = "Edit";
+    // Add functionality to edit the task
+    editBtn.addEventListener("click", () => {
+        if (editBtn.innerHTML === "Edit") {
+        // Switch to editable mode
+        taskTitle.contentEditable = true;
+        taskDesc.contentEditable = true;
+        taskTitle.focus();
+        editBtn.innerHTML = "Save"; // Change the button to "Save"
+        } else {
+        // Save changes
+        taskTitle.contentEditable = false;
+        taskDesc.contentEditable = false;
+        editBtn.innerHTML = "Edit"; // Switch back to "Edit"
 
-  // Append elements to the list item
-  li.appendChild(taskTitle);
-  li.appendChild(taskDesc);
-  li.appendChild(taskTimestamp);
-  li.appendChild(taskActions);
-
-  // Append list item to the task list
-  todoList.appendChild(li);
-}
+        // Save the updated task in chrome.storage.sync
+        chrome.storage.sync.get("todos", (data) => {
+            const todos = data.todos || [];
+            const updatedTodos = todos.map(t => {
+            if (t.title === title) {
+                return {
+                ...t,
+                title: taskTitle.textContent,
+                description: taskDesc.textContent,
+                };
+            }
+            return t;
+            });
+            chrome.storage.sync.set({ todos: updatedTodos });
+        });
+        }
+    });
+  
+    // Create delete button
+    const deleteBtn = document.createElement("button");
+    deleteBtn.className = "delete-btn";
+    deleteBtn.innerHTML = "&#10006;"; // Use an X icon for delete
+    deleteBtn.addEventListener("click", () => {
+      // Remove the task from the DOM
+      todoList.removeChild(li);
+      
+      // Remove the task from chrome.storage.sync
+      chrome.storage.sync.get("todos", (data) => {
+        const todos = data.todos || [];
+        const updatedTodos = todos.filter(t => t.title !== title); // Remove task by title
+        chrome.storage.sync.set({ todos: updatedTodos });
+      });
+    });
+  
+    // Append elements to the list item
+    li.appendChild(checkbox);   // Column 1: Checkbox
+    li.appendChild(taskInfo);   // Column 2: Task details (title, description, timestamp)
+    li.appendChild(editBtn);    // Column 3: Edit button
+    li.appendChild(deleteBtn);  // Column 3: Delete button
+  
+    // Append list item to the task list
+    todoList.appendChild(li);
+  }
+  
 
 /******************************
 LOAD TASKS FROM STORAGE ON EXTENSION OPEN
