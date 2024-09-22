@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Task Tracker</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="todo-container">
+        <header>
+            <h1>Task Tracker</h1>
+        </header>
+        
+        <button id="show-task-form-btn">Add New Task</button>
+
+        <div class="new-task-container" id="new-task-container" style="display: none;">
+            <form id="todo-form">
+                <label for="title">Title</label>
+                <input type="text" id="task-title" placeholder="Add title" required />
+
+                <label for="description">Description</label>
+                <textarea id="task-desc" placeholder="Add description"></textarea>
+                
+                <div class="form-actions">
+                    <button type="button" id="cancel-task-btn">Cancel</button>
+                    <button type="submit">Add</button>
+                </div>
+            </form>
+        </div>
+        <ul id="todo-list"></ul>
+    </div>
+  <script src="index.js"></script>
+</body>
+</html>
