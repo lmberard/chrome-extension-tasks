@@ -253,7 +253,25 @@ completeFilterBtn.addEventListener("click", () => {
 incompleteFilterBtn.addEventListener("click", () => {
     filterTasks("incomplete");
 });
+/******************************
+UPDATE PROGRESS BAR
+******************************/
+function updateProgressBar() {
+    chrome.storage.sync.get("todos", (data) => {
+        const todos = data.todos || [];
+        const totalTasks = todos.length;
+        const completedTasks = todos.filter(task => task.completed).length;
 
+        // Calculate the percentage of completed tasks
+        const completionPercentage = totalTasks === 0 ? 0 : Math.round((completedTasks / totalTasks) * 100);
+
+        // Update the progress bar and percentage display
+        const progressBar = document.getElementById("progress-bar");
+        const progressPercent = document.getElementById("progress-percent");
+        progressBar.style.width = `${completionPercentage}%`;
+        progressPercent.textContent = `${completionPercentage}%`;
+    });
+}
 /******************************
 SORT TASKS BY PRIORITY
 ******************************/
@@ -331,6 +349,8 @@ todoForm.addEventListener("submit", (e) => {
             if (reminder) {
                 scheduleReminderNotification(title, description, reminder);
             }
+
+            updateProgressBar();
         });
 
         // Clear the input fields
@@ -352,6 +372,19 @@ todoForm.addEventListener("submit", (e) => {
 });
 
 
+/******************************
+DELETE TASK (Update Progress Bar)
+******************************/
+function deleteTask(title) {
+    chrome.storage.sync.get("todos", (data) => {
+        const todos = data.todos || [];
+        const updatedTodos = todos.filter(task => task.title !== title); // Remove the task by title
+        chrome.storage.sync.set({ todos: updatedTodos });
+
+        // Update the progress bar after task deletion
+        updateProgressBar();
+    });
+}
 
 /******************************
 NOTIFICATION
@@ -394,7 +427,104 @@ function toggleTaskCompleted(title) {
             return t;
         });
         chrome.storage.sync.set({ todos: updatedTodos });
+        updateProgressBar();
     });
+}
+/******************************
+EDIT TASK
+******************************/
+function enableTaskEditing(taskElement, taskData) {
+    const editBtn = taskElement.querySelector('.edit-btn');
+    
+    if (taskData.completed) {
+        editBtn.style.display = 'none'; // Hide edit button if task is completed
+        return;
+    }
+
+    editBtn.addEventListener("click", () => {
+        // Switch between 'Edit' and 'Save'
+        if (editBtn.textContent === "🖊") {
+            // Switch to editable mode
+            enableTaskFormEditing(taskElement, taskData);
+            editBtn.textContent = "💾"; // Change the button to "Save"
+        } else {
+            // Save changes
+            saveTaskEdits(taskElement, taskData);
+            editBtn.textContent = "🖊"; // Change the button back to "Edit"
+        }
+    });
+}
+
+function saveTaskEdits(taskElement, taskData) {
+    const taskTitle = taskElement.querySelector(".task-title").textContent;
+    const taskDesc = taskElement.querySelector(".task-desc").textContent;
+    
+    // Update the task object
+    taskData.title = taskTitle;
+    taskData.description = taskDesc;
+    taskData.priority = prioritySelect.value;
+    taskData.backgroundColor = selectedBgColor;
+    taskData.categories = selectedCategories; // Use the updated selected categories
+    
+    // Update in Chrome storage
+    chrome.storage.sync.get("todos", (data) => {
+        const todos = data.todos || [];
+        const updatedTodos = todos.map(t => {
+            if (t.title === taskData.originalTitle) { // originalTitle to identify the task before editing
+                return {
+                    ...t,
+                    title: taskData.title,
+                    description: taskData.description,
+                    priority: taskData.priority,
+                    backgroundColor: taskData.backgroundColor,
+                    categories: taskData.categories
+                };
+            }
+            return t;
+        });
+        chrome.storage.sync.set({ todos: updatedTodos });
+    });
+
+    // Reflect the updates in the UI
+    taskElement.querySelector(".task-title").textContent = taskTitle;
+    taskElement.querySelector(".task-desc").textContent = taskDesc;
+
+    // Disable editable mode
+    taskElement.querySelector(".task-title").contentEditable = false;
+    taskElement.querySelector(".task-desc").contentEditable = false;
+}
+
+function updateCategoryCheckboxes(currentCategories) {
+    categories.forEach(cat => {
+        cat.selected = currentCategories.some(selectedCat => selectedCat.name === cat.name);
+    });
+    renderCategories(); // Re-render the categories with the updated selections
+}
+
+function updateBackgroundColorPicker(currentColor) {
+    const colorCircles = document.querySelectorAll('.color-circle');
+    colorCircles.forEach(circle => {
+        circle.style.border = '2px solid transparent'; // Reset the borders
+
+        // If the color matches, highlight the circle
+        if (circle.getAttribute('data-color') === currentColor) {
+            circle.style.border = '2px solid #000';
+        }
+    });
+}
+
+function enableTaskFormEditing(taskElement, taskData) {
+    // Title and Description become editable
+    const taskTitle = taskElement.querySelector(".task-title");
+    const taskDesc = taskElement.querySelector(".task-desc");
+    taskTitle.contentEditable = true;
+    taskDesc.contentEditable = true;
+
+    // Populate the task form with the current values (categories, priority, background color)
+    prioritySelect.value = taskData.priority || "none";
+    selectedBgColor = taskData.backgroundColor;
+    updateBackgroundColorPicker(taskData.backgroundColor); // Update the background color selection
+    updateCategoryCheckboxes(taskData.categories); // Mark the associated categories
 }
 
 
@@ -476,38 +606,6 @@ function addTaskToUI(title, description, categories, priority = 'none', backgrou
     editBtn.className = "edit-btn";
     editBtn.innerHTML = "🖊";
 
-    // Add functionality to edit the task
-    editBtn.addEventListener("click", () => {
-        if (editBtn.innerHTML === "🖊") {
-            // Switch to editable mode
-            taskTitle.contentEditable = true;
-            taskDesc.contentEditable = true;
-            taskTitle.focus();
-            editBtn.innerHTML = "💾"; // Change the button to "Save"
-        } else {
-            // Save changes
-            taskTitle.contentEditable = false;
-            taskDesc.contentEditable = false;
-            editBtn.innerHTML = "🖊"; // Switch back to "Edit"
-
-            // Save the updated task in chrome.storage.sync
-            chrome.storage.sync.get("todos", (data) => {
-                const todos = data.todos || [];
-                const updatedTodos = todos.map(t => {
-                    if (t.title === title) {
-                        return {
-                            ...t,
-                            title: taskTitle.textContent,
-                            description: taskDesc.textContent,
-                        };
-                    }
-                    return t;
-                });
-                chrome.storage.sync.set({ todos: updatedTodos });
-            });
-        }
-    });
-
     // Create delete button
     const deleteBtn = document.createElement("button");
     deleteBtn.className = "delete-btn";
@@ -534,6 +632,16 @@ function addTaskToUI(title, description, categories, priority = 'none', backgrou
 
     // Append list item to the task list
     todoList.appendChild(li);
+
+    enableTaskEditing(li, {
+        originalTitle: title, // Save the original title for identification
+        title,
+        description,
+        priority,
+        backgroundColor,
+        categories,
+        completed
+    });
     sortTasksByPriority();
 }
 
@@ -555,6 +663,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 todo.reminder
             );
         });
+        updateProgressBar();
     });
 
     updateFilterVisibility();
