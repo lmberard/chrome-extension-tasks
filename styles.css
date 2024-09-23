@@ -11,7 +11,15 @@ body {
   }
   
   header h1 {
-    font-size: 18px;
+    font-size: 14px;
+    margin: 8px;
+    font-family: monospace;
+  }
+
+  header div {
+    font-size: 10px;
+    margin: 8px;
+    color: grey;
   }
 
 /******************************
@@ -20,25 +28,15 @@ FORM
   #show-task-form-btn {
     width: 100%;
     padding: 10px;
-    background-color: #7c7c80;
-    color: white;
-    border: none;
-    border-radius: 8px;
-    cursor: pointer;
     font-size: 12px;
-    margin-bottom: 20px;
-  }
-  
-  #show-task-form-btn:hover {
-    background-color: #809680;
   }
 
   .new-task-container {
     background-color: #dde2e7;
     border-radius: 10px;
-    padding: 15px;
+    padding: 10px;
     margin-bottom: 20px;
-    width: 260px;
+    width: 280px;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
   }
 
@@ -67,6 +65,7 @@ FORM
     margin-bottom: 5px;
     border-radius: 10px;
     border: none;
+    color: grey
   }
   
   .form-actions {
@@ -86,11 +85,11 @@ FORM
   }
   
   .form-actions button[type="submit"]:hover {
-    background-color: #574fb3;
+    background-color: #d9e8db;
   }
   
   #cancel-task-btn:hover {
-    background-color: #757373;
+    background-color: #e0dede;
   }
 /******************************
 TASKS
@@ -112,7 +111,7 @@ TASKS
     background-color: #f5f5f5;
     border-radius: 8px;
     padding: 10px;
-    width: 260px;
+    width: 280px;
     margin-bottom: 10px;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     border: none;
@@ -140,9 +139,12 @@ li .task-actions {
   li .task-desc {
     font-size: 14px;
     margin-bottom: 5px;
+    width: 170px;
+    word-wrap: break-word;
+
   }
   
-  li .task-timestamp {
+  li .task-timestamp, .task-reminder {
     font-size: 12px;
     color: #888;
   }
@@ -162,7 +164,60 @@ li .task-actions {
     cursor: pointer;
   }
 
-  .btn-delete {
-    background: #fcfcfc00;
+  .delete-btn, .edit-btn{
+    background: transparent;
     border: none;
+  }
+
+
+/******************************
+BUTTONS
+******************************/
+.custom-btn {
+    height: 40px;
+    color: #8e8989;
+    border-radius: 8px;
+    padding: 10px 25px;
+    font-family: 'Lato', sans-serif;
+    font-weight: 500;
+    background: white;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    position: relative;
+    box-shadow:inset 2px 2px 2px 0px rgba(255,255,255,.5),
+     7px 7px 20px 0px rgba(0,0,0,.1),
+     4px 4px 5px 0px rgba(0,0,0,.1);
+    outline: none;
+  }
+
+.btn-16 {
+    border: none;
+    color: #000;
+  }
+  .btn-16:after {
+    position: absolute;
+    content: "";
+    width: 0;
+    height: 100%;
+    top: 0;
+    left: 0;
+    direction: rtl;
+    z-index: -1;
+    box-shadow:
+     -7px -7px 20px 0px #fff9,
+     -4px -4px 5px 0px #fff9,
+     7px 7px 20px 0px #0002,
+     4px 4px 5px 0px #0001;
+    transition: all 0.3s ease;
+  }
+  .btn-16:hover {
+    color: #000;
+  }
+  .btn-16:hover:after {
+    left: auto;
+    right: 0;
+    width: 100%;
+  }
+  .btn-16:active {
+    top: 2px;
   }

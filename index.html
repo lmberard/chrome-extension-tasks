@@ -9,10 +9,11 @@
 <body>
     <div class="todo-container">
         <header>
-            <h1>Task Tracker</h1>
+            <h1>Focus Track</h1>
+            <div>Your personal task companion! Stay organized, focused, and on top of your to-do list with FocusTrack - where productivity meets simplicity</div>
         </header>
         
-        <button id="show-task-form-btn">Add New Task</button>
+        <button class="custom-btn btn-16" id="show-task-form-btn">Add New Task</button>
 
         <div class="new-task-container" id="new-task-container" style="display: none;">
             <form id="todo-form">
@@ -22,9 +23,12 @@
                 <label for="description">Description</label>
                 <textarea id="task-desc" placeholder="Add description"></textarea>
                 
+                <label for="reminder">Reminder (Optional)</label>
+                <input type="datetime-local" id="task-reminder" />
+                
                 <div class="form-actions">
-                    <button type="button" id="cancel-task-btn">Cancel</button>
-                    <button type="submit">Add</button>
+                    <button class="custom-btn btn-16" type="button" id="cancel-task-btn">Cancel</button>
+                    <button class="custom-btn btn-16" type="submit">Add</button>
                 </div>
             </form>
         </div>

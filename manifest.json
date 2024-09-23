@@ -3,7 +3,14 @@
     "name": "FocusTrack",
     "version": "1.0",
     "description": "Your personal task companion! Stay organized, focused, and on top of your to-do list with FocusTrack - where productivity meets simplicity",
-    "permissions": ["storage"],
+    "permissions": [
+        "storage",
+        "notifications",
+        "alarms"
+    ],
+    "background": {
+        "service_worker": "background.js"
+    },
     "action": {
       "default_popup": "index.html",
       "default_icon": {

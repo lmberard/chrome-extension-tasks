@@ -28,29 +28,48 @@ todoForm.addEventListener("submit", (e) => {
   
   const title = document.getElementById("task-title").value;
   const description = document.getElementById("task-desc").value;
+  const reminder = document.getElementById("task-reminder").value;
 
   if (title && description) {
     const timestamp = getCurrentDateTime();
     
     // Add task to the UI
-    addTaskToUI(title, description, false, timestamp);
+    addTaskToUI(title, description, false, timestamp, reminder);
 
     // Save the task in Chrome storage
     chrome.storage.sync.get("todos", (data) => {
       const todos = data.todos || [];
-      todos.push({ title: title, description: description, completed: false, timestamp: timestamp });
+      todos.push({ title: title, description: description, completed: false, timestamp: timestamp, reminder: reminder });
       chrome.storage.sync.set({ todos });
+
+      if (reminder) {
+        scheduleReminderNotification(title, description, reminder);
+      }
     });
 
     // Clear the input fields
     document.getElementById("task-title").value = '';
     document.getElementById("task-desc").value = '';
+    document.getElementById("task-reminder").value = '';
 
     // Hide the form and show the "Add New Task" button again
     taskFormContainer.style.display = "none";
     showTaskFormBtn.style.display = "block";
   }
 });
+
+/******************************
+NOTIFICATION
+******************************/
+  function scheduleReminderNotification(title, description, reminder) {
+    const reminderTime = new Date(reminder).getTime();
+    const now = new Date().getTime();
+    const timeDifference = (reminderTime - now) / 1000; // Time difference in seconds
+  
+    if (timeDifference > 0) {
+      chrome.alarms.create(title, { delayInMinutes: timeDifference / 60 });
+    }
+  }
 
 /******************************
 TIME FORMAT
@@ -67,10 +86,27 @@ function getCurrentDateTime() {
   return `${day}/${month}/${year} ${hours}:${minutes}:${seconds}`;
 }
 
+function toggleTaskCompleted(title) {
+    chrome.storage.sync.get("todos", (data) => {
+      const todos = data.todos || [];
+      const updatedTodos = todos.map((t) => {
+        if (t.title === title) {
+          return {
+            ...t,
+            completed: !t.completed, // Toggle the completed state
+          };
+        }
+        return t;
+      });
+      chrome.storage.sync.set({ todos: updatedTodos });
+    });
+  }
+  
+
 /******************************
 ADD TASK TO UI
 ******************************/
-function addTaskToUI(title, description, completed, timestamp = null) {
+function addTaskToUI(title, description, completed, timestamp = null, reminder) {
     const li = document.createElement("li");
   
     // Create checkbox
@@ -94,17 +130,23 @@ function addTaskToUI(title, description, completed, timestamp = null) {
     const taskTimestamp = document.createElement("span");
     taskTimestamp.textContent = timestamp;
     taskTimestamp.className = "task-timestamp";
+
+    const taskReminder = document.createElement("span");
+    taskReminder.textContent = reminder ? `Reminder set for: ${new Date(reminder).toLocaleString()}` : 'No reminder set';
+    taskReminder.className = "task-reminder";
   
     // Append title, description, and timestamp to the task info container
     taskInfo.appendChild(taskTitle);
     taskInfo.appendChild(taskDesc);
     taskInfo.appendChild(taskTimestamp);
+    taskInfo.appendChild(taskReminder);
   
     // If the task is completed, apply the completed styles
     if (completed) {
       taskTitle.classList.add("completed");
       taskDesc.classList.add("completed");
       taskTimestamp.classList.add("completed");
+      taskReminder.classList.add("completed");
     }
   
     // Toggle completed state on checkbox change
@@ -118,20 +160,20 @@ function addTaskToUI(title, description, completed, timestamp = null) {
     // Create edit button
     const editBtn = document.createElement("button");
     editBtn.className = "edit-btn";
-    editBtn.innerHTML = "Edit";
+    editBtn.innerHTML = "🖊";
     // Add functionality to edit the task
     editBtn.addEventListener("click", () => {
-        if (editBtn.innerHTML === "Edit") {
+        if (editBtn.innerHTML === "🖊") {
         // Switch to editable mode
         taskTitle.contentEditable = true;
         taskDesc.contentEditable = true;
         taskTitle.focus();
-        editBtn.innerHTML = "Save"; // Change the button to "Save"
+        editBtn.innerHTML = "💾"; // Change the button to "Save"
         } else {
         // Save changes
         taskTitle.contentEditable = false;
         taskDesc.contentEditable = false;
-        editBtn.innerHTML = "Edit"; // Switch back to "Edit"
+        editBtn.innerHTML = "🖊"; // Switch back to "Edit"
 
         // Save the updated task in chrome.storage.sync
         chrome.storage.sync.get("todos", (data) => {
@@ -185,7 +227,7 @@ document.addEventListener('DOMContentLoaded', () => {
   chrome.storage.sync.get("todos", (data) => {
     const todos = data.todos || [];
     todos.forEach((todo) => {
-      addTaskToUI(todo.title, todo.description, todo.completed, todo.timestamp);
+      addTaskToUI(todo.title, todo.description, todo.completed, todo.timestamp, todo.reminder);
     });
   });
 });
