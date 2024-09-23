@@ -3,7 +3,7 @@ GENERAL
 ******************************/
 body {
     font-family: 'Arial', sans-serif;
-    background-color: #f0f0f0;
+    background-color: #ccd3da;
     display: flex;
     padding: 10px;
     margin: 0;
@@ -19,9 +19,60 @@ body {
   header div {
     font-size: 10px;
     margin: 8px;
-    color: grey;
+    color: #5b3e20;
+    font-family: 'helvetica neue';
   }
 
+
+/******************************
+ICONS MENU
+******************************/
+/* Icon Button */
+.icon-btn {
+    position: relative;
+    border: none;
+    background: none;
+    cursor: pointer;
+    font-size: 24px;
+    margin-right: 10px;
+  }
+  
+  /* Tooltip Styling */
+  .tooltip {
+    position: absolute;
+    bottom: 125%; /* Position the tooltip above the icon */
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: #333;
+    color: #fff;
+    padding: 5px;
+    border-radius: 5px;
+    font-size: 12px;
+    white-space: nowrap;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.2s ease-in-out;
+    z-index: 100;
+  }
+  
+  /* Tooltip Arrow */
+  .tooltip::after {
+    content: '';
+    position: absolute;
+    top: 100%; /* Arrow pointing down */
+    left: 50%;
+    transform: translateX(-50%);
+    border-width: 5px;
+    border-style: solid;
+    border-color: #333 transparent transparent transparent;
+  }
+  
+  /* Show tooltip on hover */
+  .icon-btn:hover .tooltip {
+    opacity: 1;
+    visibility: visible;
+  }
+  
 /******************************
 FORM
 ******************************/
@@ -32,13 +83,36 @@ FORM
   }
 
   .new-task-container {
-    background-color: #dde2e7;
+    background-color: #ede6e1;
     border-radius: 10px;
     padding: 10px;
     margin-bottom: 20px;
     width: 280px;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
   }
+
+  .task-section {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    border-radius: 0 0 4px 4px;
+    margin-bottom: 2px;
+    background: #d5ccc4;
+  }
+
+  #open-category-menu-btn, #open-reminder-menu-btn, #open-color-menu-btn {
+    background: transparent;
+    font-size: 16px;
+  }
+
+    .task-section button {
+        /* background-color: #ffffff; */
+        border: none;
+        padding: 4px;
+        border-radius: 4px;
+        cursor: pointer;
+        margin: 2px;
+    }
 
   .new-task-container h2 {
     margin: 0 0 10px 0;
@@ -61,11 +135,27 @@ FORM
   
   form input, form textarea {
     font-family: 'helvetica neue';
-    padding: 10px;
-    margin-bottom: 5px;
-    border-radius: 10px;
+    padding: 8px;
+    border-radius: 4px;
     border: none;
-    color: grey
+    color: grey;
+    width: 94%;
+  }
+
+  form input[type="datetime-local"] {
+    width: 65%;
+  }
+
+  form #task-title {
+    font-weight: bold;
+    margin:0px;
+    border-radius: 4px 4px 0 0;
+  }
+
+  form #task-desc {
+    margin-top:0px;
+    border-radius: 0px;
+    resize: vertical;
   }
   
   .form-actions {
@@ -79,7 +169,7 @@ FORM
     border-radius: 8px;
     cursor: pointer;
     background-color: #ffffff;
-    width: 26%;
+    width: 30%;
     color: rgb(71, 71, 71);
     border: none; 
   }
@@ -131,6 +221,19 @@ li .task-actions {
     color: gray;
     }
 
+    .task-category {
+        font-weight: bold;
+        margin-bottom: 5px;
+        display: block;
+        font-size: 14px;
+        
+      }
+    select{
+        padding: 6px;
+        border: none;
+        border-radius: 4px;
+        margin-bottom: 4px;
+    }
   li .task-title {
     font-weight: bold;
     margin-bottom: 5px;
@@ -171,10 +274,114 @@ li .task-actions {
 
 
 /******************************
+COLORS
+******************************/
+  /* Color Picker Section */
+#background-color-section {
+    margin-top: 10px;
+    margin-bottom: 10px;
+}
+
+#color-options-container {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 10px;
+}
+
+/* Style for the color circles */
+.color-circle {
+    width: 35px;
+    height: 35px;
+    border-radius: 50%;
+    cursor: pointer;
+    border: 2px solid transparent;
+    transition: border 0.2s ease;
+}
+
+.color-circle:hover {
+    border: 2px solid #666;
+}
+
+/* Predefined colors */
+.color-circle[data-color="#c0c9ed"] { background-color: #c0c9ed; }  /* Light Blue */
+.color-circle[data-color="#d3e5d3"] { background-color: #d3e5d3; }  /* Light Green */
+.color-circle[data-color="#e7c9c9"] { background-color: #e7c9c9; }  /* Light Pink */
+.color-circle[data-color="#efe5b0"] { background-color: #efe5b0; }  /* Light Yellow */
+.color-circle[data-color="#f0e0cc"] { background-color: #f0e0cc; }  /* Light Orange */
+.color-circle[data-color="#e0dfde"] { background-color: #e0dfde; }  /* Light Gray */
+
+
+  /******************************
+CATEGORY
+******************************/
+/* Custom dropdown styling */
+/* Style for category section */
+#categories-list {
+    display: flex;
+    flex-direction: column;
+    max-height: 150px;
+    overflow-y: auto;
+    margin-bottom: 10px;
+}
+
+.category-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 5px;
+}
+
+.category-item input {
+    margin-right: 10px;
+}
+
+#new-category-section {
+    margin-top: 10px;
+}
+
+#new-category-name {
+    padding: 5px;
+    margin-right: 10px;
+    width: 60%;
+}
+
+
+/******************************
+FILTER BUTTONS
+******************************/
+  .filter-buttons {
+    display: flex;
+    justify-content: flex-end;
+    margin-bottom: 20px;
+    margin-top: 20px;
+  }
+  
+  .filter-btn {
+    padding: 6px 8px;
+    margin: 1px;
+    border: 1px solid #ccc;
+    background-color: white;
+    cursor: pointer;
+    border-radius: 5px;
+    font-size: 14px;
+  }
+  
+  .filter-btn:hover {
+    background-color: #f0f0f0;
+  }
+  
+  .filter-btn.active {
+    background-color: #007bff;
+    color: white;
+    border-color: #007bff;
+  }
+  
+
+
+/******************************
 BUTTONS
 ******************************/
 .custom-btn {
-    height: 40px;
     color: #8e8989;
     border-radius: 8px;
     padding: 10px 25px;
